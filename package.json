@@ -1,0 +1,29 @@
+{
+  "name": "llm-txt-resolver",
+  "version": "1.0.0",
+  "description": "A Node.js library for aggregating web content into a consolidated, LLM-ready context.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/marked": "^5.0.2",
+    "@types/node": "^24.3.1",
+    "superagent": "^10.2.3",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "marked": "^16.2.1"
+  }
+}
