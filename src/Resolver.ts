@@ -1,24 +1,30 @@
 import { KnowledgeGraph, GraphNode } from './KnowledgeGraph.js';
-import { httpClient } from './httpClient.js';
+import { httpClient, HttpError } from './httpClient.js';
 import { HtmlProcessor } from './HtmlProcessor.js';
 import { MarkdownProcessor } from './MarkdownProcessor.js';
+import { CacheProvider } from './CacheProvider.js';
+import { FileSystemCacheProvider } from './FileSystemCacheProvider.js';
 import crypto from 'crypto';
 
 interface ResolverOptions {
-  depth?: number;
+    depth?: number;
+    cacheProvider?: CacheProvider;
 }
 
 export class Resolver {
-  private readonly depth: number;
-  private readonly htmlProcessor = new HtmlProcessor();
-  private readonly markdownProcessor = new MarkdownProcessor();
+    private readonly depth: number;
+    private readonly htmlProcessor = new HtmlProcessor();
+    private readonly markdownProcessor = new MarkdownProcessor();
+    private readonly cacheProvider: CacheProvider;
 
-  constructor(options: ResolverOptions = {}) {
-    this.depth = options.depth ?? 2;
-  }
+    constructor(options: ResolverOptions = {}) {
+        this.depth = options.depth ?? 2;
+        this.cacheProvider = options.cacheProvider ?? new FileSystemCacheProvider();
+    }
 
   async resolve(rootUrl: string): Promise<{ content: string; graph: KnowledgeGraph }> {
-    const graph = new KnowledgeGraph(rootUrl);
+    const newGraph = new KnowledgeGraph(rootUrl);
+    const oldGraph = await this.cacheProvider.load(rootUrl);
     const queue: { url: string; depth: number }[] = [{ url: rootUrl, depth: 0 }];
     const visited: Set<string> = new Set([rootUrl]);
 
@@ -30,13 +36,35 @@ export class Resolver {
       }
 
       try {
-        const rawContent = await httpClient(url);
+        const cachedNode = oldGraph?.nodes.get(url);
+        if (cachedNode) {
+          const headers: Record<string, string> = {};
+          if (cachedNode.eTag) headers['If-None-Match'] = cachedNode.eTag;
+          if (cachedNode.lastModified) headers['If-Modified-Since'] = cachedNode.lastModified;
+          
+          const headResponse = await httpClient(url, undefined, 'HEAD', headers);
+          if (headResponse.status === 304) {
+            newGraph.nodes.set(url, cachedNode);
+            for (const link of cachedNode.links) {
+              if (!visited.has(link.targetId)) {
+                visited.add(link.targetId);
+                queue.push({ url: link.targetId, depth: depth + 1 });
+              }
+            }
+            continue;
+          }
+        }
+
+        const response = await httpClient(url);
+        const rawContent = await response.text();
+        const eTag = response.headers.get('etag');
+        const lastModified = response.headers.get('last-modified');
         const contentHash = crypto.createHash('sha256').update(rawContent).digest('hex');
 
         const isHtml = rawContent.trim().startsWith('<');
         const { title, links, cleanContent } = isHtml
-          ? this.htmlProcessor.process(rawContent, url)
-          : this.markdownProcessor.process(rawContent, url);
+            ? this.htmlProcessor.process(rawContent, url)
+            : this.markdownProcessor.process(rawContent, url);
 
         const node: GraphNode = {
           id: url,
@@ -48,11 +76,11 @@ export class Resolver {
           rawContent,
           cleanContent,
           links: links.map(link => ({ text: '', targetId: link })),
-          eTag: null,
-          lastModified: null,
+          eTag,
+          lastModified,
           contentHash,
         };
-        graph.nodes.set(url, node);
+        newGraph.nodes.set(url, node);
 
         for (const link of links) {
           if (!visited.has(link)) {
@@ -61,24 +89,28 @@ export class Resolver {
           }
         }
       } catch (error) {
+        if (url === rootUrl) {
+          throw error;
+        }
         const node: GraphNode = {
-          id: url,
-          title: null,
-          status: 'error',
-          depth,
-          mimeType: null,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          rawContent: null,
-          cleanContent: null,
-          links: [],
-          eTag: null,
-          lastModified: null,
-          contentHash: null,
+            id: url,
+            title: null,
+            status: 'error',
+            depth,
+            mimeType: null,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            rawContent: null,
+            cleanContent: null,
+            links: [],
+            eTag: null,
+            lastModified: null,
+            contentHash: null,
         };
-        graph.nodes.set(url, node);
+        newGraph.nodes.set(url, node);
       }
     }
 
-    return { content: graph.getFlattenedContent(), graph };
+    await this.cacheProvider.save(rootUrl, newGraph);
+    return { content: newGraph.getFlattenedContent(), graph: newGraph };
   }
 }

@@ -16,7 +16,7 @@ beforeAll(() => {
       res.writeHead(404);
       res.end();
     } else if (req.url === '/timeout') {
-      // Do nothing to simulate a timeout
+      // Intentionally hold the request open to simulate a timeout
     }
   }).listen(MOCK_SERVER_PORT);
 });
@@ -26,9 +26,11 @@ afterAll(() => {
 });
 
 describe('httpClient', () => {
-  it('should return parsed JSON for a valid JSON response', async () => {
-    const data = await httpClient(`${MOCK_SERVER_URL}/valid-json`);
-    expect(JSON.parse(data)).toEqual({ message: 'success' });
+  it('should return a Response object for a valid response', async () => {
+    const response = await httpClient(`${MOCK_SERVER_URL}/valid-json`);
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data).toEqual({ message: 'success' });
   });
 
   it('should throw HttpError for a 404 response', async () => {
@@ -36,22 +38,9 @@ describe('httpClient', () => {
   });
 
   it('should throw an error on timeout', async () => {
-    // Vitest doesn't have a built-in timeout for individual tests,
-    // so we'll use a workaround with AbortController.
     const controller = new AbortController();
-    const signal = controller.signal;
-
     setTimeout(() => controller.abort(), 100); // Abort after 100ms
 
-    // We need to modify the httpClient to accept a signal
-    const httpClientWithSignal = async (url: string) => {
-        const response = await fetch(url, { signal });
-        if (!response.ok) {
-            throw new HttpError(response.statusText, response.status);
-        }
-        return response.json();
-    };
-
-    await expect(httpClientWithSignal(`${MOCK_SERVER_URL}/timeout`)).rejects.toThrow();
+    await expect(httpClient(`${MOCK_SERVER_URL}/timeout`, controller.signal)).rejects.toThrow();
   });
 });

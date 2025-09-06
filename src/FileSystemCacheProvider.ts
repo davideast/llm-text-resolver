@@ -1,0 +1,48 @@
+import { CacheProvider } from './CacheProvider.js';
+import { KnowledgeGraph, GraphNode } from './KnowledgeGraph.js';
+import fs from 'fs/promises';
+import path from 'path';
+import crypto from 'crypto';
+
+export class FileSystemCacheProvider implements CacheProvider {
+  private cacheDir: string;
+
+  constructor(cacheDir = '.cache') {
+    this.cacheDir = path.resolve(process.cwd(), cacheDir);
+  }
+
+  private getCacheKey(sourceId: string): string {
+    return crypto.createHash('sha256').update(sourceId).digest('hex');
+  }
+
+  private getCachePath(sourceId: string): string {
+    return path.join(this.cacheDir, `${this.getCacheKey(sourceId)}.json`);
+  }
+
+  async load(sourceId: string): Promise<KnowledgeGraph | null> {
+    const cachePath = this.getCachePath(sourceId);
+    try {
+      await fs.mkdir(this.cacheDir, { recursive: true });
+      const data = await fs.readFile(cachePath, 'utf-8');
+      const parsed = JSON.parse(data);
+      
+      const graph = new KnowledgeGraph(parsed.rootId);
+      graph.nodes = new Map<string, GraphNode>(Object.entries(parsed.nodes));
+      return graph;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async save(sourceId: string, graph: KnowledgeGraph): Promise<void> {
+    const cachePath = this.getCachePath(sourceId);
+    await fs.mkdir(this.cacheDir, { recursive: true });
+    
+    const data = {
+      rootId: graph.rootId,
+      nodes: Object.fromEntries(graph.nodes),
+    };
+    
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2));
+  }
+}
