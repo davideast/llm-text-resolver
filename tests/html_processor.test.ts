@@ -7,7 +7,7 @@ describe('HtmlProcessor', () => {
 
   it('should extract the title from the <head> tag', () => {
     const html = '<html><head><title>Test Title</title></head><body>Content</body></html>';
-    const { title } = processor.process(html, BASE_URL);
+    const { title } = processor.process({ html, baseUrl: BASE_URL });
     expect(title).toBe('Test Title');
   });
 
@@ -19,7 +19,7 @@ describe('HtmlProcessor', () => {
       <a href="javascript:alert('bad')">Invalid JS Link</a>
       <a href="#">Anchor Link</a>
     `;
-    const { links, cleanContent } = processor.process(html, BASE_URL);
+    const { links, cleanContent } = processor.process({ html, baseUrl: BASE_URL });
     expect(links).toEqual([
       'http://example.com/absolute',
       'http://example.com/relative',
@@ -32,13 +32,13 @@ describe('HtmlProcessor', () => {
 
   it('should unwrap non-allowed tags like <div> and <span>, preserving content', () => {
     const html = '<body><div><p>Content inside a div.</p></div><span> More text.</span></body>';
-    const { cleanContent } = processor.process(html, BASE_URL);
+    const { cleanContent } = processor.process({ html, baseUrl: BASE_URL });
     expect(cleanContent).toBe('Content inside a div. More text.');
   });
 
   it('should strip all attributes except for those on the allowlist', () => {
     const html = '<p style="color: red;" class="text">Styled</p><a href="/safe" onclick="alert(1)">Link</a>';
-    const { cleanContent, links } = processor.process(html, BASE_URL);
+    const { cleanContent, links } = processor.process({ html, baseUrl: BASE_URL });
     expect(cleanContent).toBe('Styled Link');
     expect(links).toEqual(['http://example.com/safe']);
   });
@@ -56,7 +56,7 @@ describe('HtmlProcessor', () => {
         </main>
       </body>
     `;
-    const { cleanContent } = processor.process(html, BASE_URL);
+    const { cleanContent } = processor.process({ html, baseUrl: BASE_URL });
     // Note: header and nav are block elements, so cheerio might add whitespace
     expect(cleanContent.replace(/\s+/g, ' ')).toBe('Site Title Home Article Title This is the first paragraph. And this is more text.');
   });
@@ -69,7 +69,7 @@ describe('HtmlProcessor', () => {
       <p>This is the real content.</p>
       <form><input type="text" /></form>
     `;
-    const { cleanContent } = processor.process(html, BASE_URL);
+    const { cleanContent } = processor.process({ html, baseUrl: BASE_URL });
     expect(cleanContent).toBe('This is the real content.');
   });
 });

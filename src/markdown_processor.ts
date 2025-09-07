@@ -2,7 +2,8 @@ import { marked, Token, Tokens } from 'marked';
 import { URL } from 'node:url';
 
 export class MarkdownProcessor {
-  process(markdown: string, baseUrl: string) {
+  process(options: { markdown: string; baseUrl: string }): { title: string; links: string[]; cleanContent: string } {
+    const { markdown, baseUrl } = options;
     const tokens = marked.lexer(markdown);
     const title =
       tokens.find((token): token is Tokens.Heading => token.type === 'heading' && token.depth === 1)

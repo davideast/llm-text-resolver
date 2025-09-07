@@ -34,8 +34,9 @@ export class FileSystemCacheProvider implements CacheProvider {
     }
   }
 
-  async save(sourceId: string, graph: KnowledgeGraph): Promise<void> {
-    const cachePath = this.getCachePath(sourceId);
+  async save(options: { rootUrl: string; graph: KnowledgeGraph }): Promise<void> {
+    const { rootUrl, graph } = options;
+    const cachePath = this.getCachePath(rootUrl);
     await fs.mkdir(this.cacheDir, { recursive: true });
     
     const data = {

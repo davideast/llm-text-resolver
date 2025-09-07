@@ -63,8 +63,8 @@ export class Resolver {
 
         const isHtml = rawContent.trim().startsWith('<');
         const { title, links, cleanContent } = isHtml
-          ? this.htmlProcessor.process(rawContent, url)
-          : this.markdownProcessor.process(rawContent, url);
+          ? this.htmlProcessor.process({ html: rawContent, baseUrl: url })
+          : this.markdownProcessor.process({ markdown: rawContent, baseUrl: url });
 
         const node: GraphNode = {
           id: url,
@@ -110,7 +110,7 @@ export class Resolver {
       }
     }
 
-    await this.cacheProvider.save(rootUrl, newGraph);
+    await this.cacheProvider.save({ rootUrl, graph: newGraph });
     return { content: newGraph.getFlattenedContent(), graph: newGraph };
   }
 }

@@ -16,7 +16,8 @@ const ALLOWED_ATTRS = new Map<string, Set<string>>([
 ]);
 
 export class HtmlProcessor {
-  process(html: string, baseUrl: string): { title: string; links: string[]; cleanContent: string } {
+  process(options: { html: string; baseUrl: string }): { title: string; links: string[]; cleanContent: string } {
+    const { html, baseUrl } = options;
     const $ = cheerio.load(html);
 
     const title = $('title').first().text().trim();
