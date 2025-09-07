@@ -1,23 +1,39 @@
 {
   "name": "llm-txt-resolver",
-  "version": "1.0.0",
-  "description": "A Node.js library for aggregating web content into a consolidated, LLM-ready context.",
-  "main": "dist/index.js",
+  "version": "0.0.1",
+  "description": "Aggregating web content into a consolidated, LLM-ready context.",
   "type": "module",
-  "scripts": {
-    "build": "tsc",
-    "test": "vitest"
+  "main": "dist/index.js",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
+  "scripts": {
+    "build": "bun run build:tsc",
+    "build:tsc": "tsc",
+    "test": "vitest --run",
+    "build:with-tests": "tsc -p tsconfig.test.json",
+    "test:node": "npm run build:with-tests && vitest --run --dir dist/tests",
+    "prepare": "bun run build",
+    "prepublishOnly": "bun run test:node",
+    "dev": "bun run --watch src/index.ts",
+    "test:watch": "vitest"
+  },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@types/cheerio": "^0.22.35",
     "@types/marked": "^5.0.2",
     "@types/node": "^24.3.1",
+    "@vitest/ui": "^3.2.4",
     "superagent": "^10.2.3",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
@@ -25,5 +41,10 @@
   "dependencies": {
     "cheerio": "^1.1.2",
     "marked": "^16.2.1"
+  },
+  "keywords": ["llm", "llms.txt"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davideast/llm-text-resolver"
   }
 }
