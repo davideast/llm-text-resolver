@@ -1,1 +1,1 @@
-export { Resolver, type CacheProvider, FileSystemCacheProvider } from './public_api.js';
+export { Resolver, type CacheProvider, FileSystemCacheProvider } from './node.js';

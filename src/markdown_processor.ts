@@ -1,5 +1,4 @@
 import { marked, Token, Tokens } from 'marked';
-import { URL } from 'node:url';
 
 export class MarkdownProcessor {
   process(options: { markdown: string; baseUrl: string }): { title: string; links: string[]; cleanContent: string } {

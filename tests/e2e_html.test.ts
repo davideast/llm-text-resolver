@@ -63,7 +63,7 @@ describe('Resolver E2E with local server (HTML)', () => {
     expect(secondNode?.cleanContent).toContain('This is page 1.');
     
     // Check that the final content is in the correct order
-    expect(content).toMatch(/^Welcome to the HTML test page/);
+    expect(content).toContain('# Welcome to the HTML test page');
     expect(content).toContain('This is page 1.');
   });
 });

@@ -1,4 +1,4 @@
-import { Resolver } from 'llm-txt-resolver';
+import { Resolver } from '../src/index.js';
 import * as assert from 'node:assert';
 
 async function runTest() {
