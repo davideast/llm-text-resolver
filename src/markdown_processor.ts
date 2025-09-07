@@ -5,9 +5,8 @@ export class MarkdownProcessor {
   process(options: { markdown: string; baseUrl: string }): { title: string; links: string[]; cleanContent: string } {
     const { markdown, baseUrl } = options;
     const tokens = marked.lexer(markdown);
-    const title =
-      tokens.find((token): token is Tokens.Heading => token.type === 'heading' && token.depth === 1)
-        ?.text ?? null;
+    const titleToken = tokens.find((token): token is Tokens.Heading => token.type === 'heading' && token.depth === 1);
+    const title = titleToken ? titleToken.text : '';
 
     const links: string[] = [];
 
