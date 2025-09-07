@@ -45,4 +45,19 @@ describe('HtmlProcessor', () => {
     const { cleanContent } = processor.process(html, 'http://example.com');
     expect(cleanContent).toBe('Body content');
   });
+
+  it('should remove script, style, and iframe tags', () => {
+    const html = `
+      <html>
+        <body>
+          <iframe src="tracker.html"></iframe>
+          <style>.red { color: red; }</style>
+          <script>alert('hello');</script>
+          <p>This is the real content.</p>
+        </body>
+      </html>
+    `;
+    const { cleanContent } = processor.process(html, 'http://example.com');
+    expect(cleanContent).toBe('This is the real content.');
+  });
 });

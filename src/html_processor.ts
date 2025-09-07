@@ -4,6 +4,7 @@ import { URL } from 'url';
 export class HtmlProcessor {
   process(html: string, baseUrl: string) {
     const $ = cheerio.load(html);
+    $('script, style, iframe').remove();
 
     const title = $('title').text();
 
