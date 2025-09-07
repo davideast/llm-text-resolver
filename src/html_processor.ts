@@ -1,16 +1,36 @@
 import * as cheerio from 'cheerio';
 import { URL } from 'url';
 
-// Use a Set for efficient tag lookups
-const ALLOWED_TAGS = new Set([
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'p', 'a',
-  'ul', 'ol', 'li',
-  'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'strong', 'em', 'b', 'i', 'u', 'code', 'pre', 'blockquote'
+type SanitizeAction = 'keep' | 'unwrap' | 'remove';
+
+// A unified map to define the action for each tag.
+// This is the core of the allowlist strategy.
+const SANITIZATION_MAP = new Map<string, SanitizeAction>([
+  // Keep: Core content tags
+  ['h1', 'keep'], ['h2', 'keep'], ['h3', 'keep'], ['h4', 'keep'], ['h5', 'keep'], ['h6', 'keep'],
+  ['p', 'keep'], ['a', 'keep'],
+  ['ul', 'keep'], ['ol', 'keep'], ['li', 'keep'],
+  ['table', 'keep'], ['thead', 'keep'], ['tbody', 'keep'], ['tr', 'keep'], ['th', 'keep'], ['td', 'keep'],
+  ['strong', 'keep'], ['em', 'keep'], ['b', 'keep'], ['i', 'keep'], ['u', 'keep'],
+  ['code', 'keep'], ['pre', 'keep'], ['blockquote', 'keep'],
+
+  // Unwrap: Structural tags whose content should be preserved
+  ['div', 'unwrap'], ['span', 'unwrap'],
+  ['main', 'unwrap'], ['article', 'unwrap'],
+  ['header', 'unwrap'], ['footer', 'unwrap'],
+  ['nav', 'unwrap'], ['aside', 'unwrap'],
+  ['section', 'unwrap'],
+
+  // Remove: Tags that provide no content and should be completely eliminated
+  ['script', 'remove'], ['style', 'remove'], ['iframe', 'remove'],
+  ['noscript', 'remove'], ['template', 'remove'], ['slot', 'remove'],
+  ['meta', 'remove'], ['link', 'remove'],
+  ['canvas', 'remove'], ['svg', 'remove'], ['map', 'remove'], ['area', 'remove'],
+  ['audio', 'remove'], ['video', 'remove'], ['embed', 'remove'], ['object', 'remove'],
+  ['form', 'remove'], ['input', 'remove'], ['textarea', 'remove'], ['select', 'remove'], ['option', 'remove'], ['button', 'remove']
 ]);
 
-// Use a Map for tag-specific attribute allowlists
+// A map for tag-specific attribute allowlists
 const ALLOWED_ATTRS = new Map<string, Set<string>>([
   ['a', new Set(['href'])]
 ]);
@@ -22,35 +42,35 @@ export class HtmlProcessor {
 
     const title = $('title').first().text().trim();
 
-    // 1. Unwrap non-content block tags, but keep their content
-    $('nav, aside, header, footer, form, main, article').each((i, el) => {
-      $(el).replaceWith($(el).contents());
-    });
-
-    // 2. Aggressively remove non-content tags and their children completely
-    $('script, style, iframe, noscript, template, slot, meta, link').remove();
-
-    // 2. Sanitize remaining tags and attributes based on an allowlist
+    // 1. Perform the single, unified sanitization pass
     $('body *').each((index, element) => {
       const el = $(element);
       const tagName = el.prop('tagName')?.toLowerCase();
 
-      if (!tagName || !ALLOWED_TAGS.has(tagName)) {
-        el.replaceWith(el.contents());
-        return;
-      }
+      // Default to 'unwrap' for any unknown tags to be safe
+      const action = tagName ? SANITIZATION_MAP.get(tagName) || 'unwrap' : 'unwrap';
 
-      const attrs = { ...el.attr() };
-      const allowedAttrsForTag = ALLOWED_ATTRS.get(tagName);
-
-      for (const attrName in attrs) {
-        if (!allowedAttrsForTag || !allowedAttrsForTag.has(attrName)) {
-          el.removeAttr(attrName);
-        }
+      switch (action) {
+        case 'keep':
+          // Sanitize attributes for tags we are keeping
+          const attrs = { ...el.attr() };
+          const allowedAttrsForTag = ALLOWED_ATTRS.get(tagName!);
+          for (const attrName in attrs) {
+            if (!allowedAttrsForTag || !allowedAttrsForTag.has(attrName)) {
+              el.removeAttr(attrName);
+            }
+          }
+          break;
+        case 'unwrap':
+          el.replaceWith(el.contents());
+          break;
+        case 'remove':
+          el.remove();
+          break;
       }
     });
 
-    // 3. Sanitize links after other attributes are stripped
+    // 2. Sanitize links after the main pass
     $('a').each((index, element) => {
       const el = $(element);
       const href = el.attr('href');
@@ -63,7 +83,7 @@ export class HtmlProcessor {
       }
     });
 
-    // 4. Extract valid links after sanitization
+    // 3. Extract valid links
     const links: string[] = [];
     $('a[href]').each((i, link) => {
       const href = $(link).attr('href');
@@ -77,7 +97,7 @@ export class HtmlProcessor {
       }
     });
 
-    // 5. Extract the final clean content from the sanitized body
+    // 4. Extract the final clean content
     // Add spaces around block-level elements to prevent words from mashing together
     $('p, h1, h2, h3, h4, h5, h6, li, pre, blockquote, th, td').each((i, el) => {
       $(el).prepend(' ').append(' ');
