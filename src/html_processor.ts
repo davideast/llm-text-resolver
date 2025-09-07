@@ -3,25 +3,18 @@ import { URL } from 'url';
 
 type SanitizeAction = 'keep' | 'unwrap' | 'remove';
 
-// A unified map to define the action for each tag.
-// This is the core of the allowlist strategy.
 const SANITIZATION_MAP = new Map<string, SanitizeAction>([
-  // Keep: Core content tags
   ['h1', 'keep'], ['h2', 'keep'], ['h3', 'keep'], ['h4', 'keep'], ['h5', 'keep'], ['h6', 'keep'],
   ['p', 'keep'], ['a', 'keep'],
   ['ul', 'keep'], ['ol', 'keep'], ['li', 'keep'],
   ['table', 'keep'], ['thead', 'keep'], ['tbody', 'keep'], ['tr', 'keep'], ['th', 'keep'], ['td', 'keep'],
   ['strong', 'keep'], ['em', 'keep'], ['b', 'keep'], ['i', 'keep'], ['u', 'keep'],
   ['code', 'keep'], ['pre', 'keep'], ['blockquote', 'keep'],
-
-  // Unwrap: Structural tags whose content should be preserved
   ['div', 'unwrap'], ['span', 'unwrap'],
   ['main', 'unwrap'], ['article', 'unwrap'],
   ['header', 'unwrap'], ['footer', 'unwrap'],
   ['nav', 'unwrap'], ['aside', 'unwrap'],
   ['section', 'unwrap'],
-
-  // Remove: Tags that provide no content and should be completely eliminated
   ['script', 'remove'], ['style', 'remove'], ['iframe', 'remove'],
   ['noscript', 'remove'], ['template', 'remove'], ['slot', 'remove'],
   ['meta', 'remove'], ['link', 'remove'],
@@ -30,7 +23,6 @@ const SANITIZATION_MAP = new Map<string, SanitizeAction>([
   ['form', 'remove'], ['input', 'remove'], ['textarea', 'remove'], ['select', 'remove'], ['option', 'remove'], ['button', 'remove']
 ]);
 
-// A map for tag-specific attribute allowlists
 const ALLOWED_ATTRS = new Map<string, Set<string>>([
   ['a', new Set(['href'])]
 ]);
@@ -42,17 +34,13 @@ export class HtmlProcessor {
 
     const title = $('title').first().text().trim();
 
-    // 1. Perform the single, unified sanitization pass
     $('body *').each((index, element) => {
       const el = $(element);
       const tagName = el.prop('tagName')?.toLowerCase();
-
-      // Default to 'unwrap' for any unknown tags to be safe
       const action = tagName ? SANITIZATION_MAP.get(tagName) || 'unwrap' : 'unwrap';
 
       switch (action) {
         case 'keep':
-          // Sanitize attributes for tags we are keeping
           const attrs = { ...el.attr() };
           const allowedAttrsForTag = ALLOWED_ATTRS.get(tagName!);
           for (const attrName in attrs) {
@@ -70,7 +58,6 @@ export class HtmlProcessor {
       }
     });
 
-    // 2. Sanitize links after the main pass
     $('a').each((index, element) => {
       const el = $(element);
       const href = el.attr('href');
@@ -83,7 +70,6 @@ export class HtmlProcessor {
       }
     });
 
-    // 3. Extract valid links
     const links: string[] = [];
     $('a[href]').each((i, link) => {
       const href = $(link).attr('href');
@@ -97,13 +83,55 @@ export class HtmlProcessor {
       }
     });
 
-    // 4. Extract the final clean content
-    // Add spaces around block-level elements to prevent words from mashing together
-    $('p, h1, h2, h3, h4, h5, h6, li, pre, blockquote, th, td').each((i, el) => {
-      $(el).prepend(' ').append(' ');
-    });
-    const cleanContent = $('body').text().replace(/\s\s+/g, ' ').trim();
+    const cleanContent = this.convertToMarkdown($('body'), $);
 
     return { title, links, cleanContent };
+  }
+
+  private convertToMarkdown(root: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI): string {
+    let markdown = '';
+    root.contents().each((index, node) => {
+      markdown += this.elementToMarkdown($(node), $);
+    });
+    return markdown.replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  private elementToMarkdown($el: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI): string {
+    if ($el[0].type === 'text') {
+      return $el.text().replace(/\s+/g, ' ');
+    }
+    if ($el[0].type !== 'tag') {
+      return '';
+    }
+
+    const tagName = $el.prop('tagName')?.toLowerCase();
+    
+    let content = '';
+    $el.contents().each((index, child) => {
+      content += this.elementToMarkdown($(child), $);
+    });
+
+    switch (tagName) {
+      case 'h1': return `# ${content}\n\n`;
+      case 'h2': return `## ${content}\n\n`;
+      case 'h3': return `### ${content}\n\n`;
+      case 'h4': return `#### ${content}\n\n`;
+      case 'h5': return `##### ${content}\n\n`;
+      case 'h6': return `###### ${content}\n\n`;
+      case 'p': return `${content}\n\n`;
+      case 'a': return `[${content}](${$el.attr('href') || ''})`;
+      case 'li': return `* ${content.trim()}\n`;
+      case 'ul': case 'ol': return `${content}\n`;
+      case 'strong': case 'b': return `**${content}**`;
+      case 'em': case 'i': return `*${content}*`;
+      case 'code': return `\`${content}\``;
+      case 'pre': return `\
+\
+${content}\n\
+\
+`;
+      case 'blockquote': return `> ${content}\n\n`;
+      default: return content;
+    }
   }
 }

@@ -4,6 +4,8 @@
 
 `llm-txt-resolver` is a tool for crawling an `llms.txt`, html page, or markdown document and aggregating connected links into a single clean text block.
 
+- ADD STREAMING
+
 ## Features
 
 - **Recursive Crawling**: Traverses a document by following links, up to a configurable depth.
