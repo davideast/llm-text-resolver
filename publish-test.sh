@@ -11,7 +11,7 @@ npm run test > /dev/null
 
 # 2. Pack the package
 echo "├── 📦 Packing package..."
-PACKAGE_FILE=$(npm pack | tail -n 1)
+PACKAGE_FILE=$(npm pack 2> /dev/null | tail -n 1)
 
 # 3. Create a test directory
 TEST_DIR="test-publish"
