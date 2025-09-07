@@ -30,6 +30,7 @@
     "prepublishOnly": "bun run test:node",
     "prepack": "bun run build",
     "dev": "bun run --watch src/index.ts",
+    "llm-text-resolver": "bun run src/cli.ts",
     "test:watch": "vitest"
   },
   "devDependencies": {

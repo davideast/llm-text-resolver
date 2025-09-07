@@ -12,21 +12,19 @@ async function main() {
     process.exit(1);
   }
 
-  if (!outputFile) {
-    console.error('Error: Please provide an output file path as the second argument.');
-    process.exit(1);
-  }
-
-  console.log(`Resolving content from: ${url}`);
-
   try {
     const resolver = new Resolver();
     const { content } = await resolver.resolve(url);
-    
-    const outputPath = path.resolve(process.cwd(), outputFile);
-    await fs.writeFile(outputPath, content);
 
-    console.log(`✅ Success! Content saved to: ${outputPath}`);
+    if (outputFile) {
+      const outputPath = path.resolve(process.cwd(), outputFile);
+      await fs.writeFile(outputPath, content);
+      // Use console.log for the final success message to stderr
+      console.log(`✅ Success! Content saved to: ${outputPath}`);
+    } else {
+      // Use process.stdout.write for the primary output
+      process.stdout.write(content);
+    }
 
   } catch (error) {
     console.error('An error occurred during resolution:');
