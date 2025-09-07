@@ -1,6 +1,6 @@
 {
   "name": "llm-txt-resolver",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Aggregating web content into a consolidated, LLM-ready context.",
   "type": "module",
   "packageManager": "bun@1.2.13",
