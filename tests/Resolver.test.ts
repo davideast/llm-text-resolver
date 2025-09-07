@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import http from 'http';
 import fs from 'fs/promises';
-import { Resolver } from '../src/Resolver.js';
-import { FileSystemCacheProvider } from '../src/FileSystemCacheProvider.js';
-import { HttpError } from '../src/httpClient.js';
+import { Resolver } from '../src/resolver.js';
+import { FileSystemCacheProvider } from '../src/file_system_cache_provider.js';
+import { HttpError } from '../src/http_client.js';
 
 const MOCK_SERVER_PORT = 9877;
 const MOCK_SERVER_URL = `http://localhost:${MOCK_SERVER_PORT}`;

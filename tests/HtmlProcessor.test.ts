@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HtmlProcessor } from '../src/HtmlProcessor.js';
+import { HtmlProcessor } from '../src/html_processor.js';
 
 describe('HtmlProcessor', () => {
   const processor = new HtmlProcessor();

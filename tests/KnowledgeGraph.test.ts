@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KnowledgeGraph, GraphNode } from '../src/KnowledgeGraph.js';
+import { KnowledgeGraph, GraphNode } from '../src/knowledge_graph.js';
 
 describe('KnowledgeGraph', () => {
   it('should flatten content in BFS order', () => {

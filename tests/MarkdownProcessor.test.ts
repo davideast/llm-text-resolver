@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MarkdownProcessor } from '../src/MarkdownProcessor.js';
+import { MarkdownProcessor } from '../src/markdown_processor.js';
 
 describe('MarkdownProcessor', () => {
   const processor = new MarkdownProcessor();

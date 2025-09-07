@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Resolver } from '../src/Resolver.js';
+import { Resolver } from '../src/resolver.js';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';

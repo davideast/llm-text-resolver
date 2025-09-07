@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import http from 'http';
-import { httpClient, HttpError } from '../src/httpClient.js';
+import { httpClient, HttpError } from '../src/http_client.js';
 
 const MOCK_SERVER_PORT = 9876;
 const MOCK_SERVER_URL = `http://localhost:${MOCK_SERVER_PORT}`;
