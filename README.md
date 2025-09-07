@@ -15,10 +15,17 @@
 
 ```bash
 npm i llm-txt-resolver
+# or bun
 bun i llm-txt-resolver
 ```
 
-## Quick Start
+## CLI Usage
+
+```bash
+npx llm-txt-resolver https://firebase.google.com/docs/ai-logic/llms.txt ai/llms.txt --depth 2 # default is 2
+```
+
+## Library Quick Start
 
 ```ts
 import { Resolver } from 'llm-txt-resolver';
