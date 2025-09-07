@@ -14,5 +14,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  // This log is useful for debugging, but will be silenced in the publish script
+  // console.log(`Server started on port ${PORT}`);
 });
