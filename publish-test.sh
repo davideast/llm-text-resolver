@@ -51,7 +51,7 @@ fi
 
 # 8. Test the CLI
 echo "├── 🧪 Testing the CLI..."
-CLI_OUTPUT=$(npx llm-resolver http://localhost:8989 output.txt)
+CLI_OUTPUT=$(npx llm-txt-resolver http://localhost:8989 output.txt)
 echo "│   ├── 🔄 Resolving content from: http://localhost:8989"
 if [ ! -f "output.txt" ]; then
     echo "│   ├── ❌ CLI test failed: output.txt not created."

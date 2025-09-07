@@ -6,7 +6,7 @@
   "packageManager": "bun@1.2.13",
   "license": "MIT",
   "bin": {
-    "llm-resolver": "dist/cli.js"
+    "llm-txt-resolver": "dist/cli.js"
   },
   "exports": {
     ".": {
