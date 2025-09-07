@@ -3,13 +3,38 @@ import { Resolver } from './resolver.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-async function main() {
-  const url = process.argv[2];
-  const outputFile = process.argv[3];
+const HELP_MESSAGE = `
+llm-txt-resolver
 
-  if (!url) {
-    console.error('Error: Please provide a URL as the first argument.');
-    process.exit(1);
+Aggregates web content into a consolidated, LLM-ready context.
+
+USAGE:
+  llm-txt-resolver <url> [output_file]
+
+ARGUMENTS:
+  <url>             The root URL to start crawling from.
+  [output_file]     (Optional) The path to save the aggregated content.
+                    If omitted, the content will be printed to standard output.
+
+OPTIONS:
+  -h, --help        Show this help message.
+
+EXAMPLES:
+  # Crawl a website and print the content to the console
+  llm-txt-resolver https://example.com
+
+  # Crawl a website and save the content to a file
+  llm-txt-resolver https://example.com ./output.txt
+`;
+
+async function main() {
+  const args = process.argv.slice(2);
+  const url = args[0];
+  const outputFile = args[1];
+
+  if (args.includes('--help') || args.includes('-h') || url === 'help' || !url) {
+    console.log(HELP_MESSAGE);
+    process.exit(0);
   }
 
   try {

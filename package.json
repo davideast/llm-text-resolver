@@ -30,7 +30,7 @@
     "prepublishOnly": "bun run test:node",
     "prepack": "bun run build",
     "dev": "bun run --watch src/index.ts",
-    "llm-text-resolver": "bun run src/cli.ts",
+    "llm-txt-resolver": "bun run src/cli.ts",
     "test:watch": "vitest"
   },
   "devDependencies": {
@@ -51,7 +51,7 @@
   "keywords": ["llm", "llms.txt"],
   "repository": {
     "type": "git",
-    "url": "https://github.com/davideast/llm-text-resolver"
+    "url": "https://github.com/davideast/llm-txt-resolver"
   },
   "np": {
     "yarn": false,

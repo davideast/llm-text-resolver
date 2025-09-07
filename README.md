@@ -1,8 +1,8 @@
-# llm-text-resolver
+# llm-txt-resolver
 
 > Aggregating web content into a consolidated, LLM-ready context.
 
-`llm-text-resolver` is a tool for crawling an `llms.txt`, html page, or markdown document and aggregating connected links into a single clean text block.
+`llm-txt-resolver` is a tool for crawling an `llms.txt`, html page, or markdown document and aggregating connected links into a single clean text block.
 
 ## Features
 
@@ -15,7 +15,7 @@
 
 ```bash
 npm i llm-txt-resolver
-bun i llm-text-resolver
+bun i llm-txt-resolver
 ```
 
 ## Quick Start
