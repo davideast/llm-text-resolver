@@ -7,7 +7,7 @@ import crypto from 'node:crypto';
 export class FileSystemCacheProvider implements CacheProvider {
   private cacheDir: string;
 
-  constructor(cacheDir = '.cache') {
+  constructor(cacheDir = '.llm-txt-resolver') {
     this.cacheDir = path.resolve(process.cwd(), cacheDir);
   }
 
