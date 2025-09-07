@@ -7,4 +7,4 @@
 # Conventions
 - Always use `snake_case.ts` for naming files.
 - Always use ESM over CJS.
-- Use node virtual modules, ex: `'node:path'`.
+- Use node virtual modules, ex: `import { resolve } from 'node:path';`.

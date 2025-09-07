@@ -5,7 +5,7 @@ set -e
 
 echo "Starting publish test..."
 
-# 1. Build and test is implicitly handled by bun, but we can keep these for clarity
+# 1. Build and test is implicitly handled by bun, but we keep these for clarity
 npm run build > /dev/null
 npm run test > /dev/null
 
@@ -21,7 +21,7 @@ mv "$PACKAGE_FILE" "$TEST_DIR/"
 cd "$TEST_DIR"
 
 # 4. Setup test environment
-echo "├── 🪛 Setting up test environment..."
+echo "├── 🪛  Setting up test environment..."
 npm init -y > /dev/null
 npm install "$PACKAGE_FILE" > /dev/null
 jq '.type = "module"' package.json > package.json.tmp && mv package.json.tmp package.json
@@ -30,7 +30,7 @@ jq '.type = "module"' package.json > package.json.tmp && mv package.json.tmp pac
 lsof -ti:8989 | xargs -r kill -9
 
 # 5. Start test server
-echo "├── ⚙️ Starting test server on port 8989..."
+echo "├── ⚙️  Starting test server on port 8989..."
 cp ../tests/test-server.ts ./server.ts
 bun run server.ts &> /dev/null &
 SERVER_PID=$!
@@ -52,7 +52,7 @@ fi
 # 8. Test the CLI
 echo "├── 🧪 Testing the CLI..."
 CLI_OUTPUT=$(npx llm-resolver http://localhost:8989 output.txt)
-echo "│   ├── Resolving content from: http://localhost:8989"
+echo "│   ├── 🔄 Resolving content from: http://localhost:8989"
 if [ ! -f "output.txt" ]; then
     echo "│   ├── ❌ CLI test failed: output.txt not created."
     kill $SERVER_PID
@@ -67,9 +67,13 @@ echo "│   ├── ✅ Success! Content saved to: output.txt"
 echo "│   └── ✅ CLI test passed!"
 
 # 9. Clean up
+echo "├── 🧽 Cleaning up..."
 kill $SERVER_PID
+echo "│   ├── 🛑 Stopped test server"
 cd ..
 rm -rf "$TEST_DIR"
+echo "│   ├── 🗑️  Removed test directory"
 rm -f "$PACKAGE_FILE"
+echo "│   └── 🗑️  Removed package file"
 
 echo "└── ✅ 🚢 Ship it!"
