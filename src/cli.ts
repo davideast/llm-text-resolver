@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Resolver } from './resolver.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';

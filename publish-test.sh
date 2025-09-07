@@ -37,24 +37,50 @@ npm install "$PACKAGE_FILE" > /dev/null
 jq '.type = "module"' package.json > package.json.tmp && mv package.json.tmp package.json
 
 
-# 6. Copy test file
-echo "Copying test file..."
-cp ../tests/publish-test-integration.js ./test.js
+# Kill any existing server on port 8989
+lsof -ti:8989 | xargs -r kill -9
 
-# 7. Run the test file
-echo "Running test file..."
+# Start test server
+echo "Starting test server..."
+cp ../tests/test-server.js ./server.js
+node server.js &> /dev/null &
+echo $! > server.pid
+
+# Wait for server to start
+sleep 2
+
+# 7. Run the integration test
+echo "Running integration test..."
+cp ../tests/publish-test-integration.js ./test.js
 TEST_OUTPUT=$(node test.js)
 
 # 8. Check the output and print it
 echo "Test output:"
 echo "$TEST_OUTPUT"
 if [[ "$TEST_OUTPUT" != *"Test passed!"* ]]; then
-  echo -e "${RED}Publish test failed!${NC}"
+  echo -e "${RED}Library test failed!${NC}"
+  kill $(cat server.pid)
   exit 1
 fi
 
-# 9. Clean up
+# 9. Test the CLI
+echo "Testing the CLI..."
+npx llm-resolver http://localhost:8989 output.txt
+if [ ! -f "output.txt" ]; then
+    echo -e "${RED}CLI test failed: output.txt not created.${NC}"
+    kill $(cat server.pid)
+    exit 1
+fi
+if [ ! -s "output.txt" ]; then
+    echo -e "${RED}CLI test failed: output.txt is empty.${NC}"
+    kill $(cat server.pid)
+    exit 1
+fi
+echo "CLI test passed!"
+
+# 10. Clean up
 echo "Cleaning up..."
+kill $(cat server.pid)
 cd ..
 rm -rf "$TEST_DIR"
 rm -f "$PACKAGE_FILE"
