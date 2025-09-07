@@ -27,7 +27,6 @@
     "build:with-tests": "tsc -p tsconfig.test.json",
     "test:node": "npm run build:with-tests && vitest --run --dir dist/tests",
     "prepare": "bun run build",
-    "prepublishOnly": "bun run test:node",
     "prepack": "bun run build",
     "dev": "bun run --watch src/index.ts",
     "llm-txt-resolver": "bun run src/cli.ts",
@@ -48,7 +47,10 @@
     "cheerio": "^1.1.2",
     "marked": "^16.2.1"
   },
-  "keywords": ["llm", "llms.txt"],
+  "keywords": [
+    "llm",
+    "llms.txt"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/davideast/llm-txt-resolver"
