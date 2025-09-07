@@ -4,6 +4,7 @@
   "description": "Aggregating web content into a consolidated, LLM-ready context.",
   "type": "module",
   "main": "dist/index.js",
+  "packageManager": "bun@1.2.13",
   "license": "MIT",
   "exports": {
     ".": {
@@ -25,6 +26,7 @@
     "test:node": "npm run build:with-tests && vitest --run --dir dist/tests",
     "prepare": "bun run build",
     "prepublishOnly": "bun run test:node",
+    "prepack": "bun run build",
     "dev": "bun run --watch src/index.ts",
     "test:watch": "vitest"
   },
@@ -34,6 +36,7 @@
     "@types/marked": "^5.0.2",
     "@types/node": "^24.3.1",
     "@vitest/ui": "^3.2.4",
+    "np": "^10.2.0",
     "superagent": "^10.2.3",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
@@ -46,5 +49,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/davideast/llm-text-resolver"
+  },
+  "np": {
+    "yarn": false,
+    "tests": true,
+    "cleanup": false
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

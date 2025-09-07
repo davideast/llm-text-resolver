@@ -1,14 +1,6 @@
-Of course. Here is a more detailed technical design document for the `llm-txt-resolver` library, building upon the one-pager to specify the implementation for review.
-
------
-
 ## Technical Design: `llm-txt-resolver`
 
-**Author:** Gemini
-**Status:** Draft
-**Version:** 1.0
-
-### 1\. Introduction & Goals
+### 1. Introduction & Goals
 
 This document outlines the technical design for `llm-txt-resolver`, a Node.js library for aggregating web content into a consolidated, LLM-ready context.
 
@@ -18,7 +10,7 @@ The primary goals of this design are:
   * **Efficiency:** Minimize network requests and redundant processing through an intelligent caching strategy.
   * **Extensibility:** Ensure the system can be easily expanded with new features (e.g., semantic chunking) without major refactoring.
 
-### 2\. Core Data Structures
+### 2. Core Data Structures
 
 The entire system is built around a central, in-memory graph representation of the crawled website.
 
@@ -73,7 +65,7 @@ class KnowledgeGraph {
 }
 ```
 
-### 3\. Architecture & Control Flow
+### 3. Architecture & Control Flow
 
 The `Resolver` class orchestrates the crawl using an asynchronous Breadth-First Search (BFS) algorithm. This ensures that the `depth` limit is naturally respected.
 
@@ -125,7 +117,7 @@ The `Resolver` class orchestrates the crawl using an asynchronous Breadth-First 
 
     The default `FileSystemCacheProvider` will save the graph as a JSON file in a `.cache/` directory, keyed by a hash of the root URL.
 
-### 4\. Public API Design
+### 4. Public API Design
 
 The library exposes a single class, `Resolver`.
 
@@ -145,13 +137,13 @@ class Resolver {
 }
 ```
 
-### 5\. Error Handling & Edge Cases
+### 5. Error Handling & Edge Cases
 
   * **Network Errors:** Any non-2xx HTTP response will result in the node's `status` being set to `error` with the status code in the `error` message. The crawl will continue with other queued URLs.
   * **Crawl Loops:** The "Check Visited" step in the control flow inherently prevents infinite loops by ensuring each URL is processed only once per run.
   * **Parsing Errors:** Processors should be wrapped in `try/catch` blocks. A failure to parse a document will mark its node as `error` but will not crash the entire process.
 
-### 6\. Dependencies
+### 6. Dependencies
 
   * **HTTP Client:** Native `fetch`
   * **HTML Parsing:** `cheerio` (fast, server-side jQuery-like API).

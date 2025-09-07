@@ -1,8 +1,4 @@
-Of course. Here is the complete testing plan for the `llm-txt-resolver` library, incorporating the decisions to use native `fetch` and a heuristic-based content extraction model.
-
-***
-
-## `llm-txt-resolver` - Complete Testing Plan
+## `llm-txt-resolver` Testing Plan
 
 ### 1. Introduction & Strategy
 

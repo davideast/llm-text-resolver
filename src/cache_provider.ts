@@ -1,4 +1,4 @@
-import { KnowledgeGraph } from './KnowledgeGraph.js';
+import { KnowledgeGraph } from './knowledge_graph.js';
 
 export interface CacheProvider {
   load(sourceId: string): Promise<KnowledgeGraph | null>;

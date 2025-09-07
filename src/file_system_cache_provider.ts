@@ -1,8 +1,8 @@
-import { CacheProvider } from './CacheProvider.js';
-import { KnowledgeGraph, GraphNode } from './KnowledgeGraph.js';
-import fs from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
+import { CacheProvider } from './cache_provider.js';
+import { KnowledgeGraph, GraphNode } from './knowledge_graph.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
 
 export class FileSystemCacheProvider implements CacheProvider {
   private cacheDir: string;

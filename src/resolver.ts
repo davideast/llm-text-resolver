@@ -1,26 +1,26 @@
-import { KnowledgeGraph, GraphNode } from './KnowledgeGraph.js';
-import { httpClient, HttpError } from './httpClient.js';
-import { HtmlProcessor } from './HtmlProcessor.js';
-import { MarkdownProcessor } from './MarkdownProcessor.js';
-import { CacheProvider } from './CacheProvider.js';
-import { FileSystemCacheProvider } from './FileSystemCacheProvider.js';
-import crypto from 'crypto';
+import { KnowledgeGraph, GraphNode } from './knowledge_graph.js';
+import { httpClient } from './http_client.js';
+import { HtmlProcessor } from './html_processor.js';
+import { MarkdownProcessor } from './markdown_processor.js';
+import { CacheProvider } from './cache_provider.js';
+import { FileSystemCacheProvider } from './file_system_cache_provider.js';
+import crypto from 'node:crypto';
 
 interface ResolverOptions {
-    depth?: number;
-    cacheProvider?: CacheProvider;
+  depth?: number;
+  cacheProvider?: CacheProvider;
 }
 
 export class Resolver {
-    private readonly depth: number;
-    private readonly htmlProcessor = new HtmlProcessor();
-    private readonly markdownProcessor = new MarkdownProcessor();
-    private readonly cacheProvider: CacheProvider;
+  private readonly depth: number;
+  private readonly htmlProcessor = new HtmlProcessor();
+  private readonly markdownProcessor = new MarkdownProcessor();
+  private readonly cacheProvider: CacheProvider;
 
-    constructor(options: ResolverOptions = {}) {
-        this.depth = options.depth ?? 2;
-        this.cacheProvider = options.cacheProvider ?? new FileSystemCacheProvider();
-    }
+  constructor(options: ResolverOptions = {}) {
+    this.depth = options.depth ?? 2;
+    this.cacheProvider = options.cacheProvider ?? new FileSystemCacheProvider();
+  }
 
   async resolve(rootUrl: string): Promise<{ content: string; graph: KnowledgeGraph }> {
     const newGraph = new KnowledgeGraph(rootUrl);
@@ -41,7 +41,7 @@ export class Resolver {
           const headers: Record<string, string> = {};
           if (cachedNode.eTag) headers['If-None-Match'] = cachedNode.eTag;
           if (cachedNode.lastModified) headers['If-Modified-Since'] = cachedNode.lastModified;
-          
+
           const headResponse = await httpClient(url, undefined, 'HEAD', headers);
           if (headResponse.status === 304) {
             newGraph.nodes.set(url, cachedNode);
@@ -63,8 +63,8 @@ export class Resolver {
 
         const isHtml = rawContent.trim().startsWith('<');
         const { title, links, cleanContent } = isHtml
-            ? this.htmlProcessor.process(rawContent, url)
-            : this.markdownProcessor.process(rawContent, url);
+          ? this.htmlProcessor.process(rawContent, url)
+          : this.markdownProcessor.process(rawContent, url);
 
         const node: GraphNode = {
           id: url,
@@ -93,18 +93,18 @@ export class Resolver {
           throw error;
         }
         const node: GraphNode = {
-            id: url,
-            title: null,
-            status: 'error',
-            depth,
-            mimeType: null,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            rawContent: null,
-            cleanContent: null,
-            links: [],
-            eTag: null,
-            lastModified: null,
-            contentHash: null,
+          id: url,
+          title: null,
+          status: 'error',
+          depth,
+          mimeType: null,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          rawContent: null,
+          cleanContent: null,
+          links: [],
+          eTag: null,
+          lastModified: null,
+          contentHash: null,
         };
         newGraph.nodes.set(url, node);
       }

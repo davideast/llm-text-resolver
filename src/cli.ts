@@ -1,6 +1,6 @@
-import { Resolver } from './Resolver.js';
-import fs from 'fs/promises';
-import path from 'path';
+import { Resolver } from './resolver.js';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 async function main() {
   const url = process.argv[2];
