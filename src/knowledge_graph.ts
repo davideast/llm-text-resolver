@@ -50,11 +50,11 @@ export class KnowledgeGraph {
     return result.join('\n');
   }
 
-  getAsciiVisual(): string {
-    return '';
+  private getAsciiVisual(): string {
+    throw new Error('Not implemented');
   }
 
-  toJson(): string {
-    return JSON.stringify(Object.fromEntries(this.nodes));
+  toJson(space: number | string = 2, replacer: ((key: string, value: any) => any) | undefined = undefined): string {
+    return JSON.stringify(Object.fromEntries(this.nodes), replacer, space);
   }
 }

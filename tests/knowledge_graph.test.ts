@@ -50,6 +50,7 @@ describe('KnowledgeGraph', () => {
     graph.nodes.set('B', nodeB);
     graph.nodes.set('C', nodeC);
 
+    console.log(graph.toJson());
     const flattenedContent = graph.getFlattenedContent();
     expect(flattenedContent).toBe('Content A\nContent B\nContent C');
   });
