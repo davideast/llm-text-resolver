@@ -9,6 +9,7 @@ import { sha256 } from './crypto.js';
 interface ResolverOptions {
   depth?: number;
   cacheProvider?: CacheProvider;
+  stream?: boolean;
 }
 
 export class Resolver {
@@ -22,8 +23,53 @@ export class Resolver {
     this.cacheProvider = options.cacheProvider ?? new FileSystemCacheProvider();
   }
 
-  async resolve(rootUrl: string): Promise<{ content: string; graph: KnowledgeGraph }> {
+  resolve(rootUrl: string, options: { stream: true }): ReadableStream<string>;
+  resolve(rootUrl: string, options?: { stream?: false }): Promise<{ content: string; graph: KnowledgeGraph }>;
+  resolve(
+    rootUrl: string,
+    options: { stream?: boolean } = {}
+  ): ReadableStream<string> | Promise<{ content: string; graph: KnowledgeGraph }> {
+    const { stream = false } = options;
+
+    if (stream) {
+      return this._resolveAsStream(rootUrl);
+    }
+    return this._resolveAsPromise(rootUrl);
+  }
+
+  private async _resolveAsPromise(rootUrl: string): Promise<{ content: string; graph: KnowledgeGraph }> {
     const newGraph = new KnowledgeGraph(rootUrl);
+    const generator = this._resolveGenerator(rootUrl, newGraph);
+    try {
+      for await (const _ of generator) {
+        // Consume the generator
+      }
+    } catch (error) {
+      throw error;
+    }
+    return { content: newGraph.getFlattenedContent(), graph: newGraph };
+  }
+
+  private _resolveAsStream(rootUrl: string): ReadableStream<string> {
+    const newGraph = new KnowledgeGraph(rootUrl);
+    const generator = this._resolveGenerator(rootUrl, newGraph);
+    return new ReadableStream({
+      async pull(controller) {
+        try {
+          const { value, done } = await generator.next();
+          if (done) {
+            controller.close();
+          } else {
+            controller.enqueue(value.cleanContent ?? '');
+          }
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+  }
+
+  private async *_resolveGenerator(rootUrl: string, newGraph: KnowledgeGraph): AsyncGenerator<GraphNode> {
     const oldGraph = await this.cacheProvider.load(rootUrl);
     const queue: { url: string; depth: number }[] = [{ url: rootUrl, depth: 0 }];
     const visited: Set<string> = new Set([rootUrl]);
@@ -31,7 +77,7 @@ export class Resolver {
     while (queue.length > 0) {
       const { url, depth } = queue.shift()!;
 
-      if (depth >= this.depth) {
+      if (depth > this.depth) {
         continue;
       }
 
@@ -51,6 +97,7 @@ export class Resolver {
                 queue.push({ url: link.targetId, depth: depth + 1 });
               }
             }
+            yield cachedNode;
             continue;
           }
         }
@@ -81,6 +128,7 @@ export class Resolver {
           contentHash,
         };
         newGraph.nodes.set(url, node);
+        yield node;
 
         for (const link of links) {
           if (!visited.has(link)) {
@@ -107,10 +155,10 @@ export class Resolver {
           contentHash: null,
         };
         newGraph.nodes.set(url, node);
+        yield node;
       }
     }
 
     await this.cacheProvider.save({ rootUrl, graph: newGraph });
-    return { content: newGraph.getFlattenedContent(), graph: newGraph };
   }
 }
