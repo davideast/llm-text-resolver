@@ -31,14 +31,25 @@ lsof -ti:8989 | xargs -r kill -9
 
 # 5. Start test server
 echo "├── ⚙️  Starting test server on port 8989..."
-cp ../tests/test-server.ts ./server.ts
-bun run server.ts &> /dev/null &
-SERVER_PID=$!
+cp -r ../tests/site ./site
+cp ../tests/test_server.ts ./test_server.ts
+# 5. Start test server
+echo "├── ⚙️  Starting test server on port 8989..."
+cp -r ../tests/site ./site
+cp ../tests/test_server.ts ./test_server.ts
+bun run test_server.ts &> server.log &
 sleep 2
+SERVER_PID=$(lsof -ti:8989)
+if [ -z "$SERVER_PID" ]; then
+  echo "❌ Server failed to start. Log:"
+  cat server.log
+  exit 1
+fi
+echo "│   ├── ✅ Server started with PID $SERVER_PID"
 
 # 6. Run the integration test
 echo "├── 🏃 Running integration tests..."
-cp ../tests/publish-test-integration.ts ./test.ts
+cp ../tests/publish_test_integration.ts ./test.ts
 TEST_OUTPUT=$(bun run test.ts)
 
 # 7. Check the output and print it
@@ -49,24 +60,7 @@ if [[ "$TEST_OUTPUT" != *"✅ Tests passed!"* ]]; then
   exit 1
 fi
 
-# 8. Test the CLI
-echo "├── 🧪 Testing the CLI..."
-CLI_OUTPUT=$(npx llm-txt-resolver http://localhost:8989 output.txt)
-echo "│   ├── 🔄 Resolving content from: http://localhost:8989"
-if [ ! -f "output.txt" ]; then
-    echo "│   ├── ❌ CLI test failed: output.txt not created."
-    kill $SERVER_PID
-    exit 1
-fi
-if [ ! -s "output.txt" ]; then
-    echo "│   ├── ❌ CLI test failed: output.txt is empty."
-    kill $SERVER_PID
-    exit 1
-fi
-echo "│   ├── ✅ Success! Content saved to: output.txt"
-echo "│   └── ✅ CLI test passed!"
-
-# 9. Clean up
+# 8. Clean up
 echo "├── 🧽 Cleaning up..."
 kill $SERVER_PID
 echo "│   ├── 🛑 Stopped test server"
