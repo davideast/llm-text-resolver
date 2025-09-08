@@ -3,11 +3,15 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-echo "Starting publish test..."
+echo "▶️ Starting publish test..."
 
 # 1. Build and test is implicitly handled by bun, but we keep these for clarity
 npm run build > /dev/null
-npm run test > /dev/null
+echo "├── 🔨 npm run build"
+npm test > /dev/null
+echo "├── 🧪 npm test"
+npm run test:browser > /dev/null
+echo "├── 🖥️  npm run test:browser"
 
 # 2. Pack the package
 echo "├── 📦 Packing package..."
@@ -29,10 +33,6 @@ jq '.type = "module"' package.json > package.json.tmp && mv package.json.tmp pac
 # Kill any existing server on port 8989
 lsof -ti:8989 | xargs -r kill -9
 
-# 5. Start test server
-echo "├── ⚙️  Starting test server on port 8989..."
-cp -r ../tests/site ./site
-cp ../tests/test_server.ts ./test_server.ts
 # 5. Start test server
 echo "├── ⚙️  Starting test server on port 8989..."
 cp -r ../tests/site ./site
