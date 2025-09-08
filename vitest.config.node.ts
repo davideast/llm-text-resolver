@@ -1,15 +1,10 @@
 import { defineConfig } from 'vitest/config';
+import baseConfig from './vitest.config';
 
 export default defineConfig({
+  ...baseConfig,
   test: {
-    globals: true,
-    pool: 'vmThreads', // Uses Node's vm module
-    poolOptions: {
-      vmThreads: {
-        useAtomics: true,
-      }
-    },
-    include: ['dist/**/*.test.js'],
-    exclude: ['node_modules/**'],
+    ...baseConfig.test,
+    exclude: [...baseConfig.test.exclude, 'tests/resolver.browser.test.ts'],
   },
 });

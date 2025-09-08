@@ -4,7 +4,7 @@ import { HtmlProcessor } from './html_processor.js';
 import { MarkdownProcessor } from './markdown_processor.js';
 import { CacheProvider } from './cache_provider.js';
 import { FileSystemCacheProvider } from './file_system_cache_provider.js';
-import crypto from 'node:crypto';
+import { sha256 } from './crypto.js';
 
 interface ResolverOptions {
   depth?: number;
@@ -59,7 +59,7 @@ export class Resolver {
         const rawContent = await response.text();
         const eTag = response.headers.get('etag');
         const lastModified = response.headers.get('last-modified');
-        const contentHash = crypto.createHash('sha256').update(rawContent).digest('hex');
+        const contentHash = await sha256(rawContent);
 
         const isHtml = rawContent.trim().startsWith('<');
         const { title, links, cleanContent } = isHtml

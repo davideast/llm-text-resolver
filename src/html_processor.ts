@@ -1,5 +1,4 @@
-import * as cheerio from 'cheerio';
-import { URL } from 'url';
+import { load } from 'cheerio';
 
 type SanitizeAction = 'keep' | 'unwrap' | 'remove';
 
@@ -30,7 +29,7 @@ const ALLOWED_ATTRS = new Map<string, Set<string>>([
 export class HtmlProcessor {
   process(options: { html: string; baseUrl: string }): { title: string; links: string[]; cleanContent: string } {
     const { html, baseUrl } = options;
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     const title = $('title').first().text().trim();
 
@@ -88,15 +87,15 @@ export class HtmlProcessor {
     return { title, links, cleanContent };
   }
 
-  private convertToMarkdown(root: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI): string {
+  private convertToMarkdown(root: any, $: any): string {
     let markdown = '';
-    root.contents().each((index, node) => {
+    root.contents().each((index: number, node: any) => {
       markdown += this.elementToMarkdown($(node), $);
     });
     return markdown.replace(/\n{3,}/g, '\n\n').trim();
   }
 
-  private elementToMarkdown($el: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI): string {
+  private elementToMarkdown($el: any, $: any): string {
     if ($el[0].type === 'text') {
       return $el.text().replace(/\s+/g, ' ');
     }
@@ -107,7 +106,7 @@ export class HtmlProcessor {
     const tagName = $el.prop('tagName')?.toLowerCase();
     
     let content = '';
-    $el.contents().each((index, child) => {
+    $el.contents().each((index: number, child: any) => {
       content += this.elementToMarkdown($(child), $);
     });
 
@@ -124,7 +123,7 @@ export class HtmlProcessor {
       case 'ul': case 'ol': return `${content}\n`;
       case 'strong': case 'b': return `**${content}**`;
       case 'em': case 'i': return `*${content}*`;
-      case 'code': return `\`${content}\``;
+      case 'code': return `	${content}	`;
       case 'pre': return `\
 \
 ${content}\n\
