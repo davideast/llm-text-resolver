@@ -3,7 +3,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-echo "▶️ Starting publish test..."
+echo "▶️  Starting publish test..."
 
 # 1. Build and test is implicitly handled by bun, but we keep these for clarity
 npm run build > /dev/null
