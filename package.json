@@ -19,6 +19,10 @@
         "import": "./dist/browser.js"
       },
       "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
     }
   },
   "files": [
@@ -28,8 +32,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "bun run build:tsc",
-    "build:tsc": "tsc",
+    "build": "tsup",
     "test": "vitest --run",
     "build:with-tests": "tsc -p tsconfig.test.json",
     "test:node": "npm install && npm run build && npm run build:with-tests && vitest --run --exclude '**/resolver.browser.test.ts'",
@@ -49,6 +52,7 @@
     "@vitest/ui": "^3.2.4",
     "np": "^10.2.0",
     "superagent": "^10.2.3",
+    "tsup": "^8.5.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   },

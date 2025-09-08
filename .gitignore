@@ -5,3 +5,5 @@ dist
 .idea
 .vscode
 .env
+out-test
+test-publish
