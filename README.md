@@ -12,6 +12,7 @@
 - **Content Extraction**: Intelligently extracts the main content from html and markdown pages.
 - **Caching**: Caches content to speed up subsequent runs and reduce network requests.
 - **Knowledge Graph**: Builds a graph of the site's structure, which can be used for further analysis.
+- **Node & Browser**: Works both in Node.js and in browser. Uses file system for Node.js caching and `Cache` API for browser caching.
 
 ## Installation
 
@@ -30,16 +31,20 @@ npx llm-txt-resolver https://firebase.google.com/docs/ai-logic/llms.txt ai/llms.
 ## Library Quick Start
 
 ```ts
-import { Resolver } from 'llm-txt-resolver';
+import { Resolver } from 'llm-txt-resolver'
 
-const resolver = new Resolver();
-const { content, graph } = await resolver.resolve('https://firebase.google.com/docs/ai-logic/llms.txt');
+const resolver = new Resolver()
+const llmsTxt = 'https://firebase.google.com/docs/ai-logic/llms.txt'
 
-console.log('--- Aggregated Content ---');
-console.log(content);
+// Promised based
+const { content, graph } = await resolver.resolve(llmsTxt)
+console.log({ content, graph })
 
-console.log('--- Knowledge Graph ---');
-console.log(graph);
+// Stream based
+const stream = resolve.resolve(llmsTxt, { stream: true })
+for await(let chunk of stream) {
+  console.log(chunk)
+}
 ```
 
 ## API Reference
