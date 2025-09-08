@@ -14,8 +14,10 @@ export default defineConfig({
       'tests/resolver.test.ts',
     ],
     browser: {
-      enabled: true,
-      name: 'jsdom',
+      instances: [{
+        name: 'jsdom',
+        browser: 'jsdom'
+      }],
     },
   },
 });
