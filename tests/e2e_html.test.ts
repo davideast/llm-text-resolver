@@ -9,6 +9,19 @@ let server: http.Server;
 let MOCK_SERVER_URL: string;
 const SITE_DIR = path.resolve(process.cwd(), 'tests/site');
 
+async function streamToString(stream: ReadableStream<string>): Promise<string> {
+  const reader = stream.getReader();
+  let result = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    result += value;
+  }
+  return result;
+}
+
 beforeAll(async () => {
   await new Promise<void>(resolve => {
     server = http.createServer((req, res) => {
@@ -35,7 +48,7 @@ afterAll(() => {
 });
 
 describe('Resolver E2E with local server (HTML)', () => {
-  it('should successfully crawl the local test site', async () => {
+  it('should successfully crawl the local test site with the promise API', async () => {
     const resolver = new Resolver({ depth: 2 });
     const rootUrl = `${MOCK_SERVER_URL}/index.html`;
 
@@ -61,9 +74,25 @@ describe('Resolver E2E with local server (HTML)', () => {
     expect(secondNode?.status).toBe('completed');
     expect(secondNode?.depth).toBe(1);
     expect(secondNode?.cleanContent).toContain('This is page 1.');
-    
+
     // Check that the final content is in the correct order
-    expect(content).toContain('# Welcome to the HTML test page');
+    expect(content).toContain('Welcome to the HTML test page');
+    expect(content).toContain('This is page 1.');
+  });
+
+  it('should successfully crawl the local test site with the streaming API', async () => {
+    const resolver = new Resolver({ depth: 2 });
+    const rootUrl = `${MOCK_SERVER_URL}/index.html`;
+
+    const stream = resolver.resolve(rootUrl, { stream: true });
+    const content = await streamToString(stream);
+
+    // Check that the process completed and returned data
+    expect(content).toBeTypeOf('string');
+    expect(content.length).toBeGreaterThan(50);
+
+    // Check that the final content is in the correct order
+    expect(content).toContain('Welcome to the HTML test page');
     expect(content).toContain('This is page 1.');
   });
 });

@@ -9,6 +9,19 @@ let server: http.Server;
 let MOCK_SERVER_URL: string;
 const SITE_DIR = path.resolve(process.cwd(), 'tests/site');
 
+async function streamToString(stream: ReadableStream<string>): Promise<string> {
+  const reader = stream.getReader();
+  let result = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    result += value;
+  }
+  return result;
+}
+
 beforeAll(async () => {
   await new Promise<void>(resolve => {
     server = http.createServer((req, res) => {
@@ -34,8 +47,8 @@ afterAll(() => {
   server.close();
 });
 
-describe('Resolver E2E with local server', () => {
-  it('should successfully crawl the local test site', async () => {
+describe('Resolver E2E with local server (Markdown)', () => {
+  it('should successfully crawl the local test site with the promise API', async () => {
     const resolver = new Resolver({ depth: 3 });
     const rootUrl = `${MOCK_SERVER_URL}/index.md`;
 
@@ -62,9 +75,26 @@ describe('Resolver E2E with local server', () => {
     expect(secondNode?.status).toBe('completed');
     expect(secondNode?.depth).toBe(1);
     expect(secondNode?.cleanContent).toContain('Content for AI Logic');
-    
+
     // Check that the final content is in the correct order
     expect(content).toMatch(/^Gemini API using Firebase AI Logic/);
+    expect(content).toContain('Content for AI Logic');
+    expect(content).toContain('Content for Analyze Audio');
+  });
+
+  it('should successfully crawl the local test site with the streaming API', async () => {
+    const resolver = new Resolver({ depth: 3 });
+    const rootUrl = `${MOCK_SERVER_URL}/index.md`;
+
+    const stream = resolver.resolve(rootUrl, { stream: true });
+    const content = await streamToString(stream);
+
+    // Check that the process completed and returned data
+    expect(content).toBeTypeOf('string');
+    expect(content.length).toBeGreaterThan(100);
+
+    // Check that the final content is in the correct order
+    expect(content).toMatch(/Gemini API using Firebase AI Logic/);
     expect(content).toContain('Content for AI Logic');
     expect(content).toContain('Content for Analyze Audio');
   });
